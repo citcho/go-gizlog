@@ -1,0 +1,1004 @@
+openapi: 3.0.3
+
+info:
+  title: Gizlog API - OpenAPI 3.0
+  description: |-
+    This is a Gizlog Server based on the OpenAPI 3.0 specification.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:9999
+    description: Develop
+
+tags:
+  - name: auth
+    description: 認証・認可
+  - name: report
+    description: 日報
+  - name: question
+    description: 質問
+  - name: user
+    description: ユーザー
+  - name: category
+    description: 質問カテゴリ
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: ユーザー登録
+      description: ユーザー登録
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - name
+                  - email
+                  - password
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  password:
+                    type: string
+                    format: password
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: ログイン
+      description: ログイン
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - token
+                  - token_type
+                properties:
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: "bearer"
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: ログアウト
+      operationId: ログアウト
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    type: string
+  /auth/me:
+    get:
+      tags:
+        - auth
+      summary: 自身のユーザー情報取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+                    format: email
+                  avatar_url:
+                    type: string
+                    format: url
+                  created_at:
+                    type: string
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    example: '2023-04-01 00:00:00'
+                required:
+                  - uuid
+                  - name
+                  - email
+                  - avatar_url
+                  - created_at
+                  - updated_at
+  /auth/refresh:
+    post:
+      tags:
+        - auth
+      summary: ログイントークン再発行
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  token_type:
+                    type: string
+                required:
+                  - token
+                  - token_type
+  /reports:
+    get:
+      tags:
+        - report
+      summary: 自身の全ての日報取得
+      description: 自身の全ての日報取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: reporting_time
+          in: query
+          description: 日付
+          schema:
+            type: string
+            example: 2023-04
+        - name: page
+          in: query
+          description: ページ数
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pager:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        format: int32
+                      last_page:
+                        type: integer
+                        format: int32
+                      all_page:
+                        type: integer
+                        format: int32
+                  reports:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - uuid
+                        - title
+                        - content
+                        - reporting_time
+                        - created_at
+                        - updated_at
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: 2023/4/1の日報
+                        content:
+                          type: string
+                          example: |-
+                            本日のノルマ達成。
+                            明日は新規クライアントとの商談。
+                        reporting_time:
+                          type: string
+                          format: date
+                          example: '2023-04-01 00:00:00'
+                        created_at:
+                          type: string
+                          format: date
+                          example: '2023-04-01 00:00:00'
+                        updated_at:
+                          type: string
+                          format: date
+                          example: '2023-04-01 00:00:00'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - report
+      summary: 日報の保存
+      description: 日報の保存
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        description: 日報
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - reporting_time
+              properties:
+                title:
+                  type: string
+                  example: 2023/4/1の日報
+                content:
+                  type: string
+                  example: |-
+                    本日のノルマ達成。
+                    明日は新規クライアントとの商談。
+                reporting_time:
+                  type: string
+                  format: date
+                  example: '2023-04-01 00:00:00'
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: 作成した日報詳細取得URL
+              schema:
+                type: string
+                format: url
+        '400':
+          $ref: "#/components/responses/BadRequest"
+  /reports/{reportId}:
+    get:
+      tags:
+        - report
+      summary: 日報詳細の取得
+      description: 日報詳細の取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: reportId
+          in: path
+          description: 日報UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - reporting_time
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: 2023/4/1の日報
+                  content:
+                    type: string
+                    example: |-
+                      本日のノルマ達成。
+                      明日は新規クライアントとの商談。
+                  reporting_time:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - report
+      summary: 日報更新
+      description: 日報更新
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: reportId
+          in: path
+          description: 日報UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: 日報
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - reporting_time
+              properties:
+                title:
+                  type: string
+                  example: 2023/4/1の日報
+                content:
+                  type: string
+                  example: |-
+                    本日のノルマ達成。
+                    明日は新規クライアントとの商談。
+                reporting_time:
+                  type: string
+                  format: date
+                  example: '2023-04-01 00:00:00'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - reporting_time
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: 2023/4/1の日報
+                  content:
+                    type: string
+                    example: |-
+                      本日のノルマ達成。
+                      明日は新規クライアントとの商談。
+                  reporting_time:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - report
+      summary: 日報削除
+      description: 日報削除
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: reportId
+          in: path
+          description: 日報UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - reporting_time
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: 2023/4/1の日報
+                  content:
+                    type: string
+                    example: |-
+                      本日のノルマ達成。
+                      明日は新規クライアントとの商談。
+                  reporting_time:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /questions:
+    get:
+      tags:
+        - question
+      summary: 全ての質問取得
+      description: 全ての質問取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: title
+          in: query
+          description: 質問タイトル
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: ページ数
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pager:
+                    type: object
+                    properties:
+                      current_page:
+                        type: integer
+                        format: int32
+                      last_page:
+                        type: integer
+                        format: int32
+                      all_page:
+                        type: integer
+                        format: int32
+                  questions:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - uuid
+                        - title
+                        - content
+                        - user
+                        - categories
+                        - comment_count
+                        - created_at
+                        - updated_at
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        title:
+                          type: string
+                          example: Swaggerの書き方について
+                        content:
+                          type: string
+                          example: |-
+                            OpenAPI specificationのバージョンは
+                            2.0と3.0のどちらを使用すればいいのでしょうか？
+                        user:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            avatar_url:
+                              type: string
+                              format: url
+                        categories:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              uuid:
+                                type: string
+                                format: uuid
+                              name:
+                                type: string
+                        comment_count:
+                          type: integer
+                          format: int32
+                        created_at:
+                          type: string
+                          format: date
+                          example: '2023-04-01 00:00:00'
+                        updated_at:
+                          type: string
+                          format: date
+                          example: '2023-04-01 00:00:00'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+        - question
+      summary: 質問の保存
+      description: 質問の保存
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        description: 質問
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - categories
+              properties:
+                title:
+                  type: string
+                  example: Swaggerの書き方について
+                content:
+                  type: string
+                  example: |-
+                    OpenAPI specificationのバージョンは
+                    2.0と3.0のどちらを使用すればいいのでしょうか？
+                category_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+        required: true
+      responses:
+        '201':
+          description: Successful operation
+          headers:
+            Location:
+              description: 作成した質問詳細取得URL
+              schema:
+                type: string
+                format: url
+        '400':
+          $ref: "#/components/responses/BadRequest"
+  /questions/{questionId}:
+    get:
+      tags:
+        - question
+      summary: 質問詳細の取得
+      description: 質問詳細の取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: questionId
+          in: path
+          description: 質問UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - user
+                  - categories
+                  - comments
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: Swaggerの書き方について
+                  content:
+                    type: string
+                    example: |-
+                      OpenAPI specificationのバージョンは
+                      2.0と3.0のどちらを使用すればいいのでしょうか？
+                  user:
+                    type: object
+                    properties:
+                      uuid:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      avatar_url:
+                        type: string
+                        format: url
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        content:
+                          type: string
+                        user:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            avatar_url:
+                              type: string
+                              format: url
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - question
+      summary: 質問更新
+      description: 質問更新
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: questionId
+          in: path
+          description: 質問UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: 質問
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+                - category_ids
+              properties:
+                title:
+                  type: string
+                  example: Swaggerの書き方について
+                content:
+                  type: string
+                  example: |-
+                    OpenAPI specificationのバージョンは
+                    2.0と3.0のどちらを使用すればいいのでしょうか？
+                category_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - user
+                  - categories
+                  - comments
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: Swaggerの書き方について
+                  content:
+                    type: string
+                    example: |-
+                      OpenAPI specificationのバージョンは
+                      2.0と3.0のどちらを使用すればいいのでしょうか？
+                  user:
+                    type: object
+                    properties:
+                      uuid:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      avatar_url:
+                        type: string
+                        format: url
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        content:
+                          type: string
+                        user:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            avatar_url:
+                              type: string
+                              format: url
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - question
+      summary: 質問削除
+      description: 質問削除
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+        - name: questionId
+          in: path
+          description: 質問UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - uuid
+                  - title
+                  - content
+                  - user
+                  - categories
+                  - comments
+                  - created_at
+                  - updated_at
+                properties:
+                  uuid:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                    example: Swaggerの書き方について
+                  content:
+                    type: string
+                    example: |-
+                      OpenAPI specificationのバージョンは
+                      2.0と3.0のどちらを使用すればいいのでしょうか？
+                  user:
+                    type: object
+                    properties:
+                      uuid:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      avatar_url:
+                        type: string
+                        format: url
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          format: uuid
+                        content:
+                          type: string
+                        user:
+                          type: object
+                          properties:
+                            uuid:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            avatar_url:
+                              type: string
+                              format: url
+                  created_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+                  updated_at:
+                    type: string
+                    format: date
+                    example: '2023-04-01 00:00:00'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /categories:
+    get:
+      tags:
+        - category
+      summary: 全てのカテゴリ取得
+      description: 全てのカテゴリ取得
+      parameters:
+        - $ref: '#/components/parameters/Authorization'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    uuid:
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+  responses:
+    BadRequest:
+      description: Client side error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Unauthorized error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Permission error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Not found error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  # requestBodies:
+  parameters:
+    Authorization:
+      description: Bearer token specification
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiWWFtYWRhIFRhcm91In0.dc7FsCDdZTrFeTmkj_E7RCrq8xQWl2Cdg54EVxUz16w
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
