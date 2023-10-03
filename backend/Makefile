@@ -1,4 +1,4 @@
-.PHONY: help build build-local up down logs ps test
+.PHONY: help build build-local up down logs ps test migrate rollback generate
 .DEFAULT_GOAL := help
 
 DOCKER_TAG := latest
@@ -22,16 +22,23 @@ ps: ## Check container status
 	docker compose ps
 
 test: ## Execute tests
-	go test -race -shuffle=on ./...
+	docker compose exec app go test -race -shuffle=on ./...
 
-dry-migrate: ## Try migration
-	mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo --dry-run < ./_tools/mysql/schema.sql
+initdb: ## Init DB
+	docker compose exec app go run ./cmd/migrate/main.go db init
 
-migrate:  ## Execute migration
-	mysqldef -u todo -p todo -h 127.0.0.1 -P 33306 todo < ./_tools/mysql/schema.sql
+migrate: ## Execute migration
+	docker compose exec app go run ./cmd/migrate/main.go db migrate
+
+rollback: ## Execute migration
+	docker compose exec app go run ./cmd/migrate/main.go db rollback
 
 generate: ## Generate codes
-	go generate ./...
+	docker compose exec app go generate ./...
+
+generate-key: ## Generate key pair for JWT
+	openssl genrsa 4096 -out ./internal/common/auth/cert/secret.pem && \
+	openssl rsa -pubout -in ./internal/common/auth/cert/secret.pem -out ./internal/common/auth/cert/public.pem
 
 help: ## Show options
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \

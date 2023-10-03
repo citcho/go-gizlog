@@ -1,5 +1,5 @@
 # バイナリ作成用コンテナステージ
-FROM golang:1.20.3-bullseye as deploy-builder
+FROM golang:1.21.0-bullseye as deploy-builder
 
 WORKDIR /app
 
@@ -8,7 +8,12 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -trimpath -ldflags "-w -s" -o app
+# RUN go build -trimpath -ldflags "-w -s" -o app
+
+# WORKDIR /app/cmd/monolith
+# RUN go build -trimpath -ldflags "-w -s" -o ../../app
+# WORKDIR /app/cmd/migrate
+# RUN go build -trimpath -ldflags "-w -s" -o ../../migrate
 
 # ------------------------------------------------------------
 
@@ -24,15 +29,13 @@ CMD ["./app"]
 # ------------------------------------------------------------
 
 # ローカル用ライブリロード対応コンテナステージ
-FROM golang:1.20.3 as dev
+FROM golang:1.21.0 as dev
 
 WORKDIR /app
 
 RUN go install -v golang.org/x/tools/gopls@latest \
     && go install -v github.com/rogpeppe/godef@latest \
+    && go install github.com/golang/mock/mockgen@v1.6.0 \
     && go install github.com/cosmtrek/air@latest
 
-
-WORKDIR /app/cmd/
-
-CMD ["air"]
+CMD ["air", "-c", "./.air.toml"]
