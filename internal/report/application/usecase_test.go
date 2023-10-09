@@ -9,7 +9,8 @@ import (
 	"github.com/citcho/go-gizlog/internal/common/config"
 	"github.com/citcho/go-gizlog/internal/common/database"
 	"github.com/citcho/go-gizlog/internal/report/application"
-	"github.com/citcho/go-gizlog/internal/report/infrastructure/report"
+	"github.com/citcho/go-gizlog/internal/report/domain/report"
+	report_infra "github.com/citcho/go-gizlog/internal/report/infrastructure/report"
 	"github.com/golang/mock/gomock"
 )
 
@@ -23,8 +24,9 @@ func Test_ReportUsecase_StoreReport(t *testing.T) {
 	}
 	db := database.NewDB(*cfg)
 
-	repository := report.NewMySQLRepository(db)
-	sut := application.NewReportUsecase(repository)
+	repository := report_infra.NewMySQLRepository(db)
+	service := report.NewReportService(repository)
+	sut := application.NewReportUsecase(service, repository)
 
 	type args struct {
 		ctx context.Context
@@ -41,7 +43,7 @@ func Test_ReportUsecase_StoreReport(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				cmd: application.StoreReportCommand{
-					ID:            "dummy-uuid-string",
+					ID:            "dummy-ulid-string",
 					Content:       "content",
 					ReportingTime: time.Now(),
 				},

@@ -9,12 +9,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type IUserService interface {
-	FetchByEmail(context.Context, string) (user.User, error)
+type TokenGenerator interface {
+	GenerateToken(ctx context.Context, u *user.User) ([]byte, error)
 }
 
-type TokenGenerator interface {
-	GenerateToken(ctx context.Context, u user.User) ([]byte, error)
+type IUserService interface {
+	FetchByEmail(context.Context, string) (*user.User, error)
 }
 
 type IAuthUsecase interface {

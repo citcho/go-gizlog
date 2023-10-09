@@ -15,12 +15,12 @@ type User struct {
 	password string
 }
 
-func ReConstruct(
+func ReConstructFromRepository(
 	id string,
 	name string,
 	email string,
 	password string,
-) (*User, error) {
+) *User {
 	u := &User{
 		id:       id,
 		name:     name,
@@ -28,7 +28,7 @@ func ReConstruct(
 		password: password,
 	}
 
-	return u, nil
+	return u
 }
 
 func NewUser(

@@ -6,10 +6,9 @@ services:
       context: .
       dockerfile: "go.Dockerfile"
       target: dev
-    # entrypoint: ["./docker/entrypoint.sh", "./cmd/microservices/orders/main.go"]
     environment:
-      GIZLOG_ENV: dev
       APP_PORT: 8080
+      GIZLOG_ENV: dev
       GIZLOG_DB_HOST: db
       GIZLOG_DB_PORT: 3306
       GIZLOG_DB_NAME: gizlog
@@ -21,84 +20,9 @@ services:
       - .:/app
     depends_on:
       - db
-  # user:
-  #   container_name: gizlog
-  #   build:
-  #     context: .
-  #     dockerfile: "go.Dockerfile"
-  #     args:
-  #       - target=dev
-  #   entrypoint: ["./docker/entrypoint.sh", "./cmd/microservices/orders/main.go"]
-  #   environment:
-  #     GIZLOG_ENV: dev
-  #     APP_PORT: 8080
-  #     GIZLOG_DB_HOST: db
-  #     GIZLOG_DB_PORT: 3306
-  #     GIZLOG_DB_NAME: gizlog
-  #     GIZLOG_DB_USER: gizlog
-  #     GIZLOG_DB_PASSWORD: secret
-  #   ports:
-  #     - 9999:8080
-  #   volumes:
-  #     - .:/app
-  #   tty: true
-  #   depends_on:
-  #     - db
-  # report:
-  #   container_name: gizlog
-  #   build:
-  #     context: .
-  #     dockerfile: "go.Dockerfile"
-  #     args:
-  #       - target=dev
-  #   entrypoint: ["./docker/entrypoint.sh", "./cmd/microservices/orders/main.go"]
-  #   environment:
-  #     GIZLOG_ENV: dev
-  #     APP_PORT: 8080
-  #     GIZLOG_DB_HOST: db
-  #     GIZLOG_DB_PORT: 3306
-  #     GIZLOG_DB_NAME: gizlog
-  #     GIZLOG_DB_USER: gizlog
-  #     GIZLOG_DB_PASSWORD: secret
-  #   ports:
-  #     - 9999:8080
-  #   volumes:
-  #     - .:/app
-  #   tty: true
-  #   depends_on:
-  #     - db
-  # question_board:
-  #   container_name: gizlog
-  #   build:
-  #     context: .
-  #     dockerfile: "go.Dockerfile"
-  #     args:
-  #       - target=dev
-  #   entrypoint: ["./docker/entrypoint.sh", "./cmd/microservices/orders/main.go"]
-  #   environment:
-  #     GIZLOG_ENV: dev
-  #     APP_PORT: 8080
-  #     GIZLOG_DB_HOST: db
-  #     GIZLOG_DB_PORT: 3306
-  #     GIZLOG_DB_NAME: gizlog
-  #     GIZLOG_DB_USER: gizlog
-  #     GIZLOG_DB_PASSWORD: secret
-  #   ports:
-  #     - 9999:8080
-  #   volumes:
-  #     - .:/app
-  #   tty: true
-  #   depends_on:
-  #     - db
-
-  # rabbitmq:
-  #   image: rabbitmq:3.7-management
-  #   ports:
-  #     - "15672:15672"
 
   db:
     image: mysql:8.0
-    # M1 の人は platform をコメントイン
     platform: linux/arm64/v8
     ports:
       - 3305:3306

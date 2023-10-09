@@ -43,11 +43,10 @@ func main() {
 	userUsecase := user_app.NewUserUsecase(userService, userRepository)
 	userHttpController := user_interface_http.NewUserController(userUsecase)
 
-	// TODO: userUsecaseを渡すのではなく、Repositoryを渡すようにする
-	userIntraprocessController := user_interface_intraprocess.NewUserController(userUsecase)
-
-	userService := auth_infra_user.NewUserService(userIntraprocessController)
-	authUsecase := application.NewAuthUsecase(userService, jwter)
+	userIntraprocessController := user_interface_intraprocess.NewIntraprocessController(userRepository)
+	authUsecase := application.NewAuthUsecase(
+		auth_infra_user.NewIntraprocessService(userIntraprocessController), jwter,
+	)
 	authController := auth_interface_http.NewAuthController(authUsecase)
 
 	reportRepository := report_infra.NewMySQLRepository(db)

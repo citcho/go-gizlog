@@ -52,7 +52,7 @@ func parse(rawKey []byte) (jwk.Key, error) {
 	return key, nil
 }
 
-func (j *JWTer) GenerateToken(ctx context.Context, u user.User) ([]byte, error) {
+func (j *JWTer) GenerateToken(ctx context.Context, u *user.User) ([]byte, error) {
 	token, err := jwt.NewBuilder().
 		// JwtID(uuid.New().String()).
 		Issuer(`github.com/citcho/go-gizlog`).

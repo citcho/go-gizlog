@@ -6,25 +6,45 @@ import (
 	"github.com/citcho/go-gizlog/internal/user/domain/user"
 )
 
+type IUserRepository interface {
+	FetchByEmail(context.Context, string) (*user.User, error)
+}
+
+type User struct {
+	ID       string
+	Name     string
+	Email    string
+	Password string
+}
+
+func UserFromDomainUser(domainUser *user.User) User {
+	return User{
+		ID:       domainUser.ID(),
+		Name:     domainUser.Name(),
+		Email:    domainUser.Email(),
+		Password: domainUser.Password(),
+	}
+}
+
 type IUserUsecase interface {
 	FetchByEmail(context.Context, string) (*user.User, error)
 }
 
-type UserController struct {
-	usecase IUserUsecase
+type IntraprocessController struct {
+	repository IUserRepository
 }
 
-func NewUserController(uu IUserUsecase) *UserController {
-	return &UserController{
-		usecase: uu,
+func NewIntraprocessController(ur IUserRepository) *IntraprocessController {
+	return &IntraprocessController{
+		repository: ur,
 	}
 }
 
-func (uc UserController) FetchByEmail(ctx context.Context, email string) (*user.User, error) {
-	u, err := uc.usecase.FetchByEmail(ctx, email)
+func (uc IntraprocessController) FetchByEmail(ctx context.Context, email string) (User, error) {
+	domainUser, err := uc.repository.FetchByEmail(ctx, email)
 	if err != nil {
-		return &user.User{}, err
+		return User{}, err
 	}
 
-	return u, nil
+	return UserFromDomainUser(domainUser), nil
 }

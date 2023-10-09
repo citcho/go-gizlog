@@ -12,7 +12,6 @@ import (
 
 type IReportRepository interface {
 	Save(context.Context, *report.Report) error
-	Exists(context.Context, *report.Report) (bool, error)
 }
 
 type IReportService interface {

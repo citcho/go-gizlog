@@ -58,15 +58,12 @@ func (mr *MySQLRepository) FetchByEmail(ctx context.Context, email string) (*use
 		return &user.User{}, err
 	}
 
-	domainUser, err := user.NewUser(
+	domainUser := user.ReConstructFromRepository(
 		u.ID,
 		u.Name,
 		u.Email,
 		u.Password,
 	)
-	if err != nil {
-		return &user.User{}, err
-	}
 
 	return domainUser, nil
 }

@@ -51,6 +51,10 @@ func (uu UserUsecase) StoreUser(ctx context.Context, cmd StoreUserCommand) (err 
 		return fmt.Errorf("既にこのメールアドレスを持つユーザーが存在しています。: %w", derror.InvalidArgument)
 	}
 
+	if err := uu.repository.Save(ctx, u); err != nil {
+		return err
+	}
+
 	return nil
 }
 

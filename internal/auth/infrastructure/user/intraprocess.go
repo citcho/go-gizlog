@@ -7,28 +7,25 @@ import (
 	"github.com/citcho/go-gizlog/internal/user/interface/private/intraprocess"
 )
 
-type UserService struct {
-	uc *intraprocess.UserController
+type IntraprocessService struct {
+	ic *intraprocess.IntraprocessController
 }
 
-func NewUserService(uc *intraprocess.UserController) *UserService {
-	return &UserService{uc}
+func NewIntraprocessService(ic *intraprocess.IntraprocessController) *IntraprocessService {
+	return &IntraprocessService{
+		ic: ic,
+	}
 }
 
-func (us UserService) FetchByEmail(ctx context.Context, email string) (user.User, error) {
-	u, err := us.uc.FetchByEmail(ctx, email)
+func (is IntraprocessService) FetchByEmail(ctx context.Context, email string) (*user.User, error) {
+	u, err := is.ic.FetchByEmail(ctx, email)
 	if err != nil {
-		return user.User{}, nil
+		return &user.User{}, nil
 	}
 
-	authUser, err := user.NewUser(
-		u.ID(),
-		u.Email(),
-		u.Password(),
-	)
-	if err != nil {
-		return user.User{}, err
-	}
+	return authUserFromIntraprocessUser(u)
+}
 
-	return *authUser, nil
+func authUserFromIntraprocessUser(u intraprocess.User) (*user.User, error) {
+	return user.NewUser(u.ID, u.Email, u.Password)
 }
