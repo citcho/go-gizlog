@@ -22,7 +22,10 @@ ps: ## Check container status
 	docker compose ps
 
 test: ## Execute tests
-	docker compose exec app go test -race -shuffle=on ./...
+	docker compose exec app go test -v -race -shuffle=on ./...
+
+test-integration:
+	docker compose exec app go test -v -tags=integration ./...
 
 initdb: ## Init DB
 	docker compose exec app go run ./cmd/migrate/main.go db init

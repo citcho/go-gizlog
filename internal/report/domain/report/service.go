@@ -2,6 +2,8 @@ package report
 
 import (
 	"context"
+	"fmt"
+	"time"
 )
 
 type IReportRepository interface {
@@ -22,6 +24,9 @@ func (rs ReportService) Exists(ctx context.Context, r *Report) (bool, error) {
 	exists, err := rs.repository.Exists(ctx, r)
 	if err != nil {
 		return exists, err
+	}
+	if exists {
+		return exists, fmt.Errorf("既に%sの日報が存在します。", r.ReportingTime().Format(time.DateOnly))
 	}
 
 	return exists, nil

@@ -10,24 +10,10 @@ import (
 	"github.com/citcho/go-gizlog/internal/report/domain/report"
 )
 
-type IReportRepository interface {
-	Save(context.Context, *report.Report) error
-}
-
-type IReportService interface {
-	Exists(context.Context, *report.Report) (bool, error)
-}
-
-type ReportUsecase struct {
-	service    IReportService
-	repository IReportRepository
-}
-
-func NewReportUsecase(rs IReportService, rr IReportRepository) *ReportUsecase {
-	return &ReportUsecase{
-		service:    rs,
-		repository: rr,
-	}
+type StoreReportCommand struct {
+	ID            string
+	Content       string    `json:"content"`
+	ReportingTime time.Time `json:"reporting_time"`
 }
 
 func (ru *ReportUsecase) StoreReport(ctx context.Context, cmd StoreReportCommand) (err error) {
@@ -50,10 +36,10 @@ func (ru *ReportUsecase) StoreReport(ctx context.Context, cmd StoreReportCommand
 
 	exists, err := ru.service.Exists(ctx, r)
 	if err != nil {
-		return fmt.Errorf("%s: %w", err, derror.InvalidArgument)
+		return fmt.Errorf("%s: %w", err, derror.InternalServerError)
 	}
 	if exists {
-		return fmt.Errorf("既に%sの日報を作成しています。: %w", r.ReportingTime().Format(time.DateOnly), derror.InvalidArgument)
+		return fmt.Errorf("%s: %w", err, derror.InvalidArgument)
 	}
 
 	if err := ru.repository.Save(ctx, r); err != nil {

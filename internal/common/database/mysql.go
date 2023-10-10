@@ -10,7 +10,7 @@ import (
 	"github.com/uptrace/bun/dialect/mysqldialect"
 )
 
-func NewDB(cfg config.DBConfig) *bun.DB {
+func NewDB(cfg *config.DBConfig) *bun.DB {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.DBUser,

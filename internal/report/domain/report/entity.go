@@ -13,6 +13,20 @@ type Report struct {
 	reportingTime time.Time
 }
 
+func ReConstructFromRepository(
+	id string,
+	userId string,
+	content string,
+	reportingTime time.Time,
+) *Report {
+	return &Report{
+		id:            id,
+		userID:        userId,
+		content:       content,
+		reportingTime: reportingTime,
+	}
+}
+
 func NewReport(
 	id string,
 	userId string,

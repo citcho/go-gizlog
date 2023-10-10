@@ -5,8 +5,7 @@ go 1.20
 require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/golang/mock v1.6.0
-	github.com/google/uuid v1.3.0
+	github.com/google/go-cmp v0.5.9
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/lestrrat-go/jwx/v2 v2.0.12
 	github.com/oklog/ulid/v2 v2.1.0

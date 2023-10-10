@@ -13,7 +13,8 @@ var (
 
 	// InvalidArgument indicates that the input into the request is invalid in
 	// some way (HTTP 400).
-	InvalidArgument = errors.New("invalid argument")
+	InvalidArgument     = errors.New("invalid argument")
+	InternalServerError = errors.New("internal server error")
 )
 
 type ErrResponse struct {

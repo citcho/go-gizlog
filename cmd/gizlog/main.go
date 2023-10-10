@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("%s", err.Error())
 	}
 
-	db := database.NewDB(*cfg)
+	db := database.NewDB(cfg)
 
 	jwter, err := auth.NewJWTer(clock.RealClocker{})
 	if err != nil {

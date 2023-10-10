@@ -22,7 +22,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db := database.NewDB(*dbcfg)
+	db := database.NewDB(dbcfg)
 	db.AddQueryHook(bundebug.NewQueryHook(
 		bundebug.WithEnabled(false),
 		bundebug.FromEnv(""),
