@@ -14,6 +14,7 @@ services:
       GIZLOG_DB_NAME: gizlog
       GIZLOG_DB_USER: gizlog
       GIZLOG_DB_PASSWORD: secret
+      TZ: "Asia/Tokyo"
     ports:
       - 9999:8080
     volumes:

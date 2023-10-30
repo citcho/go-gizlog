@@ -22,7 +22,6 @@ func NewDB(cfg *config.DBConfig) *bun.DB {
 
 	sqldb, err := sql.Open("mysql", dsn)
 	if err != nil {
-		fmt.Println("aaa")
 		panic(err)
 	}
 

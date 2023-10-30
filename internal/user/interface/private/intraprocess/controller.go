@@ -10,6 +10,7 @@ type IUserRepository interface {
 	FetchByEmail(context.Context, string) (*user.User, error)
 }
 
+// User is public interface for client
 type User struct {
 	ID       string
 	Name     string
@@ -17,7 +18,7 @@ type User struct {
 	Password string
 }
 
-func UserFromDomainUser(domainUser *user.User) User {
+func userFromDomainUser(domainUser *user.User) User {
 	return User{
 		ID:       domainUser.ID(),
 		Name:     domainUser.Name(),
@@ -46,5 +47,5 @@ func (uc IntraprocessController) FetchByEmail(ctx context.Context, email string)
 		return User{}, err
 	}
 
-	return UserFromDomainUser(domainUser), nil
+	return userFromDomainUser(domainUser), nil
 }

@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+var now time.Time = time.Now()
+
 type Clocker interface {
 	Now() time.Time
 }
@@ -17,5 +19,6 @@ func (r RealClocker) Now() time.Time {
 type FixedClocker struct{}
 
 func (fc FixedClocker) Now() time.Time {
-	return time.Date(2022, 5, 10, 12, 34, 56, 0, time.UTC)
+	jst := time.FixedZone("JST", 9*60*60)
+	return now.In(jst)
 }

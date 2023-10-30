@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=./service.go -destination=./mock/service.go
 type IReportRepository interface {
 	Exists(context.Context, *Report) (bool, error)
 }

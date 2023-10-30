@@ -4,8 +4,6 @@ package application_test
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"testing"
 	"time"
 
@@ -13,11 +11,12 @@ import (
 	"github.com/citcho/go-gizlog/internal/common/clock"
 	"github.com/citcho/go-gizlog/internal/common/config"
 	"github.com/citcho/go-gizlog/internal/common/database"
+	"github.com/citcho/go-gizlog/internal/common/testutil"
 	"github.com/citcho/go-gizlog/internal/report/application"
 	"github.com/citcho/go-gizlog/internal/report/domain/report"
+	"github.com/citcho/go-gizlog/internal/report/infrastructure/dao"
 	report_dao "github.com/citcho/go-gizlog/internal/report/infrastructure/dao"
 	report_infra "github.com/citcho/go-gizlog/internal/report/infrastructure/report"
-	user_dao "github.com/citcho/go-gizlog/internal/user/infrastructure/dao"
 	"github.com/google/go-cmp/cmp"
 	"github.com/oklog/ulid/v2"
 	"github.com/uptrace/bun"
@@ -27,34 +26,42 @@ func TestReportUsecase_StoreReport(t *testing.T) {
 	t.Helper()
 
 	// Arrange
+	ctx := context.Background()
+	tx, err := testutil.OpenDBForTest(t).BeginTx(ctx, nil)
+	t.Cleanup(func() { _ = tx.Rollback() })
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	cfg, err := config.NewDBConfig()
 	if err != nil {
-		log.Fatalf("%s", err.Error())
+		t.Fatal(err)
 	}
 	db := database.NewDB(cfg)
 	repo := report_infra.NewMySQLRepository(db)
 	svc := report.NewReportService(repo)
 
 	uid := ulid.Make().String()
-	ctx := auth.SetUserID(context.Background(), uid)
-	prepareUser(ctx, db, "testuser", "test@example.com", "P@ssw0rd")
-
 	rid := ulid.Make().String()
 	c := clock.FixedClocker{}
+
 	cmd := application.StoreReportCommand{
 		ID:            rid,
-		Content:       "test-content",
+		Content:       "test content",
 		ReportingTime: c.Now(),
 	}
+
 	want, err := report.NewReport(
 		rid,
 		uid,
-		"test-content",
-		time.Date(2022, 5, 10, 0, 0, 0, 0, time.UTC),
+		"test content",
+		c.Now(),
 	)
 	if err != nil {
 		t.Fatalf("%s", err.Error())
 	}
+
+	ctx = auth.SetUserID(ctx, uid)
 
 	// Act
 	sut := application.NewReportUsecase(svc, repo)
@@ -71,27 +78,6 @@ func TestReportUsecase_StoreReport(t *testing.T) {
 	if d := cmp.Diff(got, want, opt); len(d) != 0 {
 		t.Errorf("differs: (-got +want)\n%s", d)
 	}
-}
-
-func prepareUser(ctx context.Context, db *bun.DB, name string, email string, password string) error {
-	userId, ok := auth.GetUserID(ctx)
-	if !ok {
-		return fmt.Errorf("user_id not found")
-	}
-
-	_, err := db.NewInsert().
-		Model(&user_dao.User{
-			ID:       userId,
-			Name:     name,
-			Email:    email,
-			Password: password,
-		}).
-		Exec(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func findReportById(ctx context.Context, db *bun.DB, reportId string) (*report.Report, error) {
@@ -112,4 +98,24 @@ func findReportById(ctx context.Context, db *bun.DB, reportId string) (*report.R
 	)
 
 	return report, nil
+}
+
+func prepareReport(rid string, uid string, content string, reportingTime time.Time) error {
+	cfg, err := config.NewDBConfig()
+	if err != nil {
+		return err
+	}
+	db := database.NewDB(cfg)
+	dao := dao.Report{
+		ID:            rid,
+		UserID:        uid,
+		Content:       content,
+		ReportingTime: reportingTime,
+	}
+
+	db.NewInsert().
+		Model(&dao).
+		Exec(context.Background())
+
+	return nil
 }

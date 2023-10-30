@@ -39,13 +39,15 @@ func NewReport(
 	if userId == "" {
 		return &Report{}, errors.New("user_idがありません。")
 	}
-	if utf8.RuneCountInString(content) > 1000 {
+	if utf8.RuneCountInString(content) > 999 {
 		return &Report{}, errors.New("投稿できる日報内容の文字数を超過しています。")
 	}
 	if content == "" {
 		return &Report{}, errors.New("日報内容がありません。")
 	}
-	if reportingTime.After(time.Now().AddDate(0, 0, 1)) {
+	if reportingTime.Year() > time.Now().Year() ||
+		reportingTime.Year() == time.Now().Year() && reportingTime.Month() > time.Now().Month() ||
+		reportingTime.Year() == time.Now().Year() && reportingTime.Month() == time.Now().Month() && reportingTime.Day() > time.Now().Day() {
 		return &Report{}, errors.New("明日以降の日報は作成できません。")
 	}
 
